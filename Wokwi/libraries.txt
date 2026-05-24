@@ -1,0 +1,5 @@
+PubSubClient
+DHT sensor library
+Adafruit Unified Sensor
+MPU6050
+ArduinoJson
