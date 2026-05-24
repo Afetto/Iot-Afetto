@@ -50,7 +50,6 @@
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
     [ "esp:RX", "$serialMonitor:TX", "", [] ],
-    [ "bb1:tn.1", "esp:GND.2", "black", [ "v0" ] ],
     [ "esp:3V3", "dht1:VCC", "gray", [ "h0.15", "v-86.4", "h268.8" ] ],
     [ "esp:4", "dht1:SDA", "violet", [ "h9.6", "v-192", "h172.7" ] ],
     [ "dht1:GND", "esp:GND.2", "black", [ "v48", "h-201.6" ] ],
@@ -62,6 +61,10 @@
     [ "esp:26", "bb1:26b.h", "green", [ "h-19.05", "v-134.4", "h163.2", "v163.2" ] ],
     [ "esp:27", "bb1:27b.i", "blue", [ "h-28.65", "v-153.6", "h182.4", "v182.4" ] ],
     [ "rgb1:COM", "bb1:tn.22", "black", [ "h28.9", "v-38.7" ] ],
+    [ "btn1:1.l", "esp:18", "red", [ "v-38.4", "h-230" ] ],
+    [ "btn1:2.l", "esp:GND.2", "black", [ "v-48", "h-250" ] ],
+    [ "btn2:1.l", "esp:19", "blue", [ "v-57.6", "h-220" ] ],
+    [ "btn2:2.l", "esp:GND.2", "black", [ "v-67.2", "h-280" ] ],
     [ "rgb1:R", "bb1:24t.a", "", [ "$bb" ] ],
     [ "rgb1:COM", "bb1:25t.b", "", [ "$bb" ] ],
     [ "rgb1:G", "bb1:26t.a", "", [ "$bb" ] ],
@@ -72,10 +75,7 @@
     [ "r2:2", "bb1:27b.h", "", [ "$bb" ] ],
     [ "r3:1", "bb1:26t.c", "", [ "$bb" ] ],
     [ "r3:2", "bb1:26b.g", "", [ "$bb" ] ],
-    [ "btn1:1.l", "esp:18", "red", [ "v-38.4", "h-230" ] ],
-    [ "btn1:2.l", "esp:GND.2", "black", [ "v-48", "h-250" ] ],
-    [ "btn2:1.l", "esp:19", "blue", [ "v-57.6", "h-220" ] ],
-    [ "btn2:2.l", "esp:GND.2", "black", [ "v-67.2", "h-280" ] ]
+    [ "esp:3V3", "bb1:tn.1", "black", [ "h0.15", "v-28.8", "h115.2", "v28.8" ] ]
   ],
   "dependencies": {}
 }

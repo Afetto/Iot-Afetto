@@ -18,10 +18,10 @@ const int   mqtt_port   = 1883;
 #define BTN_FEBRE     18  // botão 1
 #define BTN_INATIVO   19  // botão 2
 
-#define TOPIC_TEMP   "petos/coleira/temperatura"
-#define TOPIC_MOV    "petos/coleira/movimento"
-#define TOPIC_STATUS "petos/coleira/status"
-#define TOPIC_ALERTA "petos/coleira/alerta"
+#define TOPIC_TEMP   "afetto/coleira/temperatura"
+#define TOPIC_MOV    "afetto/coleira/movimento"
+#define TOPIC_STATUS "afetto/coleira/status"
+#define TOPIC_ALERTA "afetto/coleira/alerta"
 
 DHT          dht(DHTPIN, DHTTYPE);
 MPU6050      mpu;
@@ -31,9 +31,9 @@ PubSubClient client(espClient);
 unsigned long ultimoEnvio = 0;
 
 void setLED(int r, int g, int b) {
-  digitalWrite(LED_R, r);
-  digitalWrite(LED_G, g);
-  digitalWrite(LED_B, b);
+  digitalWrite(LED_R, !r);  // invertido — anodo comum
+  digitalWrite(LED_G, !g);
+  digitalWrite(LED_B, !b);
 }
 
 String classificarStatus(float temp, float accel) {
@@ -43,9 +43,21 @@ String classificarStatus(float temp, float accel) {
 }
 
 void atualizarLED(String status) {
-  if (status == "normal")  setLED(0, 1, 0);
-  if (status == "atencao") setLED(1, 1, 0);
-  if (status == "critico") setLED(1, 0, 0);
+  if (status == "normal") {
+    digitalWrite(LED_R, HIGH);  // apagado
+    digitalWrite(LED_G, LOW);   // verde aceso
+    digitalWrite(LED_B, HIGH);  // apagado
+  }
+  if (status == "atencao") {
+    digitalWrite(LED_R, LOW);   // vermelho aceso
+    digitalWrite(LED_G, LOW);   // verde aceso = amarelo
+    digitalWrite(LED_B, HIGH);  // apagado
+  }
+  if (status == "critico") {
+    digitalWrite(LED_R, LOW);   // vermelho aceso
+    digitalWrite(LED_G, HIGH);  // apagado
+    digitalWrite(LED_B, HIGH);  // apagado
+  }
 }
 
 void conectarWiFi() {
@@ -61,7 +73,7 @@ void conectarWiFi() {
 void conectarMQTT() {
   while (!client.connected()) {
     Serial.print("Conectando MQTT...");
-    if (client.connect("PetOS-Coleira")) {
+    if (client.connect("Afetto-Coleira")) {
       Serial.println(" ok");
     } else {
       delay(3000);
@@ -156,7 +168,7 @@ void loop() {
       client.publish(TOPIC_ALERTA, buf);
     }
 
-    Serial.printf("[PetOS] Temp: %.1f°C | Accel: %.2f | Status: %s\n",
+    Serial.printf("[Afetto] Temp: %.1f°C | Accel: %.2f | Status: %s\n",
                   temperatura, accel, status.c_str());
   }
 }
