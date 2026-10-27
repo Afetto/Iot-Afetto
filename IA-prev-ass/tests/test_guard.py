@@ -1,16 +1,11 @@
-import sys
 import unittest
-from pathlib import Path
 from unittest.mock import patch
 
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from apoio import TesteComBanco
 import guard
 
 
-class GuardApiTest(unittest.TestCase):
-    def setUp(self):
-        self.client = guard.app.test_client()
+class GuardApiTest(TesteComBanco):
 
     def analisar(self, temperatura, atividade, **extras):
         payload = {
@@ -27,10 +22,26 @@ class GuardApiTest(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertEqual(resposta.json["analise"]["nivel"], "baixo")
 
-    def test_febre_critica(self):
+    def test_temperatura_elevada_e_atencao(self):
         resposta = self.analisar(40.8, 1.0)
+        self.assertEqual(resposta.json["analise"]["nivel"], "medio")
+
+    def test_limites_da_faixa_normal(self):
+        for temp in (37.5, 39.2):
+            self.assertEqual(self.analisar(temp, 1.0).json["analise"]["nivel"], "baixo")
+
+    def test_temperatura_baixa_e_atencao(self):
+        resposta = self.analisar(35.0, 1.0)
+        self.assertEqual(resposta.json["analise"]["nivel"], "medio")
+
+    def test_febre_critica(self):
+        resposta = self.analisar(43.5, 1.0)
         self.assertEqual(resposta.json["analise"]["nivel"], "critico")
         self.assertGreaterEqual(resposta.json["analise"]["score_risco"], 70)
+
+    def test_hipotermia_critica(self):
+        resposta = self.analisar(32.0, 1.0)
+        self.assertEqual(resposta.json["analise"]["nivel"], "critico")
 
     def test_febre_e_inatividade_criticas(self):
         resposta = self.analisar(40.8, 0.1)
@@ -41,7 +52,7 @@ class GuardApiTest(unittest.TestCase):
         with patch.object(guard, "chamar_llama", return_value="Mensagem personalizada."):
             resposta = self.client.post("/pets/risco", json={
                 "nome": "Bolinha",
-                "temperatura_atual": 40.8,
+                "temperatura_atual": 43.5,
                 "atividade_atual": 0.1,
             })
         self.assertEqual(resposta.json["analise"]["nivel"], "critico")

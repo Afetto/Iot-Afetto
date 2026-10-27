@@ -1,0 +1,47 @@
+test_analisar_exige_leitura_da_coleira (test_api.ApiTest.test_analisar_exige_leitura_da_coleira) ... ok
+test_chat_mantem_a_sessao (test_api.ApiTest.test_chat_mantem_a_sessao) ... ok
+test_chat_responde_com_telemetria_e_guarda_conversa (test_api.ApiTest.test_chat_responde_com_telemetria_e_guarda_conversa) ... ok
+test_chat_valida_entrada (test_api.ApiTest.test_chat_valida_entrada) ... ok
+test_detalhe_traz_historico_clinico (test_api.ApiTest.test_detalhe_traz_historico_clinico) ... ok
+test_guard_completa_telemetria_com_dados_clinicos (test_api.ApiTest.test_guard_completa_telemetria_com_dados_clinicos) ... ok
+test_health_e_painel (test_api.ApiTest.test_health_e_painel) ... ok
+test_lista_pets_da_base (test_api.ApiTest.test_lista_pets_da_base) ... ok
+test_pet_desconhecido_usa_somente_telemetria (test_api.ApiTest.test_pet_desconhecido_usa_somente_telemetria) ... ok
+test_emergencia_nao_consulta_o_llm (test_assistente.AssistenteTest.test_emergencia_nao_consulta_o_llm) ... ok
+test_fallback_sem_telemetria_nao_inventa (test_assistente.AssistenteTest.test_fallback_sem_telemetria_nao_inventa) ... ok
+test_fallback_temperatura_por_faixa (test_assistente.AssistenteTest.test_fallback_temperatura_por_faixa) ... ok
+test_fallback_vacinas_usa_historico (test_assistente.AssistenteTest.test_fallback_vacinas_usa_historico) ... ok
+test_identifica_intencoes (test_assistente.AssistenteTest.test_identifica_intencoes) ... ok
+test_prompt_leva_contexto_real_do_pet (test_assistente.AssistenteTest.test_prompt_leva_contexto_real_do_pet) ... ok
+test_usa_resposta_do_llm_quando_disponivel (test_assistente.AssistenteTest.test_usa_resposta_do_llm_quando_disponivel) ... ok
+test_mudanca_de_status_agenda_analise (test_bridge.BridgeTest.test_mudanca_de_status_agenda_analise) ... [IoT] 43.9°C | atividade 1.00 | critico
+ok
+test_payload_invalido_nao_derruba_a_ponte (test_bridge.BridgeTest.test_payload_invalido_nao_derruba_a_ponte) ... [MQTT] payload inválido em afetto/coleira/status: Expecting value: line 1 column 1 (char 0)
+[MQTT] payload inválido em afetto/coleira/status: 'temp'
+ok
+test_status_e_gravado_no_banco_com_o_pet (test_bridge.BridgeTest.test_status_e_gravado_no_banco_com_o_pet) ... [IoT] 40.8°C | atividade 1.10 | atencao
+ok
+test_busca_por_nome_e_coleira (test_dados.IndicadoresTest.test_busca_por_nome_e_coleira) ... ok
+test_calcula_idade_e_meses_desde_consulta (test_dados.IndicadoresTest.test_calcula_idade_e_meses_desde_consulta) ... ok
+test_identifica_vacina_vencida (test_dados.IndicadoresTest.test_identifica_vacina_vencida) ... ok
+test_sem_vacinas_fica_desconhecido (test_dados.IndicadoresTest.test_sem_vacinas_fica_desconhecido) ... ok
+test_arquivo_com_id_duplicado_e_rejeitado (test_dados.ValidacaoTest.test_arquivo_com_id_duplicado_e_rejeitado) ... ok
+test_base_do_projeto_e_valida (test_dados.ValidacaoTest.test_base_do_projeto_e_valida) ... ok
+test_detecta_campos_e_valores_invalidos (test_dados.ValidacaoTest.test_detecta_campos_e_valores_invalidos) ... ok
+test_detecta_data_mal_formatada (test_dados.ValidacaoTest.test_detecta_data_mal_formatada) ... ok
+test_detecta_datas_de_vacina_incoerentes (test_dados.ValidacaoTest.test_detecta_datas_de_vacina_incoerentes) ... ok
+test_registro_valido_sem_erros (test_dados.ValidacaoTest.test_registro_valido_sem_erros) ... ok
+test_febre_critica (test_guard.GuardApiTest.test_febre_critica) ... ok
+test_febre_e_inatividade_criticas (test_guard.GuardApiTest.test_febre_e_inatividade_criticas) ... ok
+test_hipotermia_critica (test_guard.GuardApiTest.test_hipotermia_critica) ... ok
+test_limites_da_faixa_normal (test_guard.GuardApiTest.test_limites_da_faixa_normal) ... ok
+test_llm_nao_altera_decisao (test_guard.GuardApiTest.test_llm_nao_altera_decisao) ... ok
+test_pet_saudavel (test_guard.GuardApiTest.test_pet_saudavel) ... ok
+test_rejeita_telemetria_invalida (test_guard.GuardApiTest.test_rejeita_telemetria_invalida) ... ok
+test_temperatura_baixa_e_atencao (test_guard.GuardApiTest.test_temperatura_baixa_e_atencao) ... ok
+test_temperatura_elevada_e_atencao (test_guard.GuardApiTest.test_temperatura_elevada_e_atencao) ... ok
+
+----------------------------------------------------------------------
+Ran 38 tests in 0.285s
+
+OK

@@ -2,6 +2,7 @@ import json
 import os
 import queue
 import signal
+import sqlite3
 import threading
 import time
 import uuid
@@ -9,6 +10,9 @@ from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import requests
+
+import dados
+import db
 
 
 BROKER = os.getenv("AFETTO_MQTT_BROKER", "broker.hivemq.com")
@@ -53,6 +57,35 @@ def salvar_json_atomico(caminho: Path, dados: dict) -> None:
         json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     temporario.replace(caminho)
+
+
+def identificar_pet(leitura: dict) -> dict | None:
+    """Liga a leitura da coleira ao pet da base (por id, nome ou device_id)."""
+    try:
+        pets = dados.carregar_pets()
+    except dados.DadosInvalidos as erro:
+        print(f"[Dados] base de pets inválida: {erro}")
+        return None
+    for chave in (leitura.get("petId"), leitura.get("pet"), leitura.get("deviceId")):
+        pet = dados.buscar_pet(chave, pets) if chave else None
+        if pet:
+            return pet
+    return None
+
+
+def persistir_leitura(leitura: dict) -> None:
+    pet = identificar_pet(leitura)
+    if pet:
+        leitura["petId"] = pet["id"]
+    db.salvar_telemetria(
+        pet_id=leitura.get("petId") or None,
+        pet_nome=leitura.get("pet") or PET_NAME,
+        temperatura=leitura["temperatura"],
+        atividade=leitura["atividade"],
+        status=leitura.get("status"),
+        device_id=leitura.get("deviceId"),
+        alerta=leitura.get("alerta"),
+    )
 
 
 def montar_payload_guard(leitura: dict) -> dict:
@@ -145,6 +178,8 @@ def on_message(client, userdata, message) -> None:
             estado["temperatura"] = float(payload["temp"])
             estado["atividade"] = float(payload["accel"])
             estado["status"] = payload.get("status", "desconhecido")
+            if estado["status"] == "normal":
+                estado.pop("alerta", None)
         elif sufixo == "alerta":
             estado["alerta"] = payload.get("motivo")
         else:
@@ -162,6 +197,8 @@ def on_message(client, userdata, message) -> None:
         salvar_json_atomico(TELEMETRIA_FILE, estado)
 
         if sufixo == "status":
+            persistir_leitura(estado)
+            salvar_json_atomico(TELEMETRIA_FILE, estado)
             print(
                 f"[IoT] {estado['temperatura']:.1f}°C | "
                 f"atividade {estado['atividade']:.2f} | {estado['status']}"
@@ -170,7 +207,7 @@ def on_message(client, userdata, message) -> None:
 
     except (UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as erro:
         print(f"[MQTT] payload inválido em {message.topic}: {erro}")
-    except OSError as erro:
+    except (OSError, sqlite3.Error) as erro:
         print(f"[MQTT] não foi possível salvar a telemetria: {erro}")
 
 

@@ -1,116 +1,139 @@
-# Afetto — Cuidado que acompanha
+# Afetto — IA Preventiva e Assistente
 
-> Assistente de IA e coleira inteligente para transformar sinais da rotina em cuidado preventivo para pets.
+> A coleira capta sinais da rotina do pet, e a IA transforma esses sinais em cuidado preventivo para o tutor.
 
-O Afetto conecta dados de rotina captados pela coleira a uma camada de prevenção e orientação. A proposta não substitui o médico-veterinário: ela ajuda o tutor a perceber mudanças relevantes mais cedo e encaminha informações organizadas para a clínica.
+Projeto acadêmico da disciplina **Disruptive Architectures: IoT, IoB & Generative IA**, construído para a jornada de cuidado contínuo da **CLYVO VET** (Challenge FIAP 2026).
 
-## Entrega — 3º Sprint
+## Entrega — 4º Sprint
 
 | Item | Acesso |
 | --- | --- |
-| Vídeo pitch e demonstração funcional | **Pendente:** inserir o link do YouTube em modo não listado antes da entrega. |
-| Repositório do projeto | **Pendente:** inserir a URL deste repositório após o push para o GitHub. |
-| Diagrama de arquitetura | [Abrir PDF](docs/arquitetura-afetto-ia.pdf) |
-| Código, documentação e testes | Disponíveis neste repositório. |
+| Vídeo pitch e demonstração funcional | Link em [`../LinkYouTube.txt`](../LinkYouTube.txt) (YouTube, não listado) |
+| Repositório | https://github.com/Afetto/Iot-Afetto |
+| Evidências de funcionamento | [`../evidencias/`](../evidencias/README.md): telas, conversas, análise e testes |
+| Diagrama de arquitetura | Seção [Arquitetura](#arquitetura) e [PDF](docs/arquitetura-afetto-ia.pdf) |
 
-> Antes de enviar o `.zip`, substitua os dois campos **Pendente** pelos links públicos exigidos na atividade.
+### O que mudou do 3º para o 4º Sprint
+
+| Requisito do Sprint 4 | Como foi atendido |
+| --- | --- |
+| Implementar a solução de IA definida | **Afetto Guard** (motor de regras + Llama 3) e **Afetto Assistente** (agente conversacional com contexto) implementados e integrados |
+| Preparar e organizar os dados, com testes e validação | Base estruturada [`data/pets.json`](data/pets.json) com perfil, vacinas, consultas, doenças e medicamentos. O módulo [`dados.py`](dados.py) valida cada registro e calcula os indicadores. Os testes cobrem a validação |
+| Integração entre aplicação, banco, APIs e IA | API REST em Flask + banco **SQLite** ([`db.py`](db.py)) com telemetria, análises e conversas + ponte MQTT da coleira |
+| Funcionalidade acessível ao usuário final | **Painel web do tutor** em `http://localhost:5000`, com coleira ao vivo, análise preventiva e chat |
+| Evidências do funcionamento | Pasta [`evidencias/`](../evidencias/README.md) e 38 testes automatizados |
 
 ## O problema
 
-Na rotina do tutor, sinais de mudança de comportamento, temperatura e atividade podem passar despercebidos ou gerar dúvida: é algo pontual ou é hora de procurar a clínica? Quando o histórico está espalhado, a decisão fica ainda mais difícil e o cuidado tende a ser reativo.
+Na rotina do tutor, mudanças de temperatura, atividade e comportamento passam despercebidas ou geram dúvida: é algo pontual ou é hora de procurar a clínica? Quando o histórico está espalhado, a decisão fica mais difícil e o cuidado tende a ser reativo.
 
 Na pesquisa exploratória do projeto, com 102 tutores:
 
-- 68% relataram dificuldade para entender se uma mudança de comportamento pode indicar um problema de saúde.
+- 68% têm dificuldade para entender se uma mudança de comportamento pode indicar problema de saúde.
 - 76% têm dúvida sobre quando procurar atendimento veterinário.
-- 61% não possuem um histórico centralizado de saúde e rotina do pet.
+- 61% não têm histórico centralizado de saúde e rotina do pet.
 
-O Afetto propõe acompanhamento contínuo, alertas contextualizados e uma conversa de apoio, preservando o diagnóstico e a conduta clínica para o profissional veterinário.
+## A solução de IA
 
-## A solução
+Abordagem **híbrida**: as regras **decidem**, o LLM local **explica** e o agente **conversa**.
 
-O protótipo integra quatro partes:
-
-1. **Coleira inteligente:** um ESP32 no Wokwi simula a leitura de temperatura e movimento do pet.
-2. **Comunicação IoT:** as leituras são publicadas nos tópicos MQTT `afetto/coleira/#`.
-3. **IA Preventiva (Guard):** valida telemetria, aplica regras de risco e, quando disponível, usa Ollama para gerar uma orientação curta e contextualizada.
-4. **IA Assistente:** conversa com o tutor usando o perfil e a telemetria recente, sem inventar dados e sem realizar diagnóstico.
-
-## Como a IA é usada
-
-O projeto utiliza uma abordagem híbrida: **motor de regras + LLM local com Ollama**.
-
-| Componente | Responsabilidade | Por que é importante |
+| Componente | Técnica | Responsabilidade |
 | --- | --- | --- |
-| Motor de regras | Define o nível de risco a partir de temperatura e atividade. | Mantém decisões críticas previsíveis, auditáveis e testáveis. |
-| Ollama / Llama | Personaliza a explicação e a orientação ao tutor. | Torna a mensagem mais clara e adequada ao contexto do pet. |
-| Assistente | Responde dúvidas considerando os dados recentes disponíveis. | Ajuda o tutor a acompanhar a rotina sem substituir a clínica. |
+| **Motor de regras** ([`regras.py`](regras.py)) | Sistema de classificação determinístico | Calcula score (0–100), nível de risco, riscos e recomendações por urgência. É auditável e testável |
+| **Afetto Guard** ([`guard.py`](guard.py)) | Regras + IA generativa (Llama 3 via Ollama) | Junta a telemetria com o histórico clínico, decide pelas regras e usa o Llama para escrever uma mensagem empática e personalizada. O LLM **nunca altera** a decisão |
+| **Afetto Assistente** ([`assistente.py`](assistente.py)) | Agente conversacional com RAG simplificado | Identifica a intenção da pergunta, injeta no prompt os dados reais do pet (perfil, vacinas, consultas, coleira, última análise) e responde em linguagem natural |
+| **Guarda de segurança** | Regras de proteção | Mensagens com sinais de emergência (convulsão, sangramento, envenenamento…) recebem resposta fixa e imediata, sem passar pelo LLM |
+| **Fallback** | Respostas por regras | Se o Ollama estiver fora do ar, Guard e Assistente respondem com regras sobre os mesmos dados. O tutor nunca fica sem retorno |
 
-Em uma situação crítica, a regra determina o alerta primeiro. O modelo de linguagem apenas explica o próximo passo de forma responsável. Assim, a IA generativa não recebe a responsabilidade de diagnosticar ou decidir sozinha.
+**Por que Llama 3 local (Ollama)?** Não tem custo por requisição, os dados clínicos não saem da máquina e o modelo pode ser trocado por variável de ambiente (`OLLAMA_MODEL`).
+
+### Regras de risco
+
+| Sinal | Regra | Peso |
+| --- | --- | --- |
+| Temperatura 37,5–39,2 °C | Normal | 0 |
+| Temperatura até 4 °C fora da faixa (33,5–37,4 ou 39,3–43,2 °C) | Atenção | +20 |
+| Temperatura além da margem (< 33,5 ou > 43,2 °C) | Crítico | +70 |
+| Atividade < 0,3 / < 0,8 | Inatividade severa / baixa | +70 / +10 |
+| Vacinas vencidas | Preventivo | +15 |
+| Sem consulta há > 12 / > 6 meses | Preventivo | +15 / +10 |
+| Cão com 7 anos ou mais | Pet sênior | +10 |
+
+Níveis: **baixo** < 20 · **médio** 20–39 · **alto** 40–69 · **crítico** ≥ 70. As faixas de temperatura são as mesmas do firmware da coleira.
 
 ## Dados utilizados
 
-| Dado | Origem | Uso na solução |
+| Dado | Origem | Uso |
 | --- | --- | --- |
-| Temperatura | Sensor DHT22 simulado no Wokwi | Identificar possíveis picos de temperatura. |
-| Movimento / aceleração | MPU6050 simulado no Wokwi | Identificar inatividade persistente ou fora do padrão. |
-| Status da coleira | Firmware ESP32 | Comunicar o estado `normal`, `atencao` ou `critico`. |
-| Perfil e histórico do pet | Aplicação Afetto / cadastro | Personalizar orientações e manter contexto longitudinal. |
-| Vacinas, consultas e medicamentos | Aplicação e banco de dados | Apoiar o acompanhamento do tutor e da clínica. |
+| Temperatura e atividade | Coleira ESP32 (DHT22 + MPU6050) via MQTT | Detectar febre, hipotermia e inatividade |
+| Status e alertas da coleira | Firmware ESP32 | Classificação imediata no dispositivo (LED) |
+| Perfil (espécie, raça, nascimento, peso, sexo) | `data/pets.json` | Personalizar a análise (ex.: pet sênior) e a linguagem |
+| Vacinas (aplicação e próxima dose) | `data/pets.json` | Identificar vacinas vencidas e a próxima vacina |
+| Consultas, doenças crônicas e medicamentos | `data/pets.json` | Contexto clínico do Guard e do Assistente |
+| Histórico de telemetria, análises e conversas | SQLite (`runtime/afetto.db`) | Gráfico no painel, memória da conversa, rastreabilidade |
 
-No protótipo atual, os dados de telemetria são persistidos localmente em arquivos JSON na pasta `runtime/`. Na evolução da arquitetura, o backend Java e o banco de dados centralizam o histórico clínico e operacional.
+**Preparação e validação.** Ao carregar a base, [`dados.py`](dados.py) rejeita registros com campos obrigatórios ausentes, espécie inválida, peso fora da faixa, datas mal formatadas ou no futuro, próxima dose anterior à aplicação e ids duplicados. Depois calcula os indicadores que a IA consome: idade, vacinas em dia ou vencidas, próxima vacina e meses desde a última consulta. Dados ausentes ficam como **desconhecidos** e nunca são simulados. Os dados de `pets.json` são fictícios, criados para a demonstração.
 
-## Arquitetura e fluxo
+## Arquitetura
 
-```text
-ESP32 + DHT22/MPU6050 (Wokwi)
-            │ publica telemetria MQTT
-            ▼
-     Broker MQTT (HiveMQ)
-            │ afetto/coleira/#
-            ▼
-      mqtt_bridge.py
-            │ salva a última leitura
-            ├──────────────────────► runtime/telemetria_atual.json
-            │ envia evento de risco
-            ▼
-       guard.py (Flask)
-            │ regras de prevenção + Ollama
-            ▼
-   runtime/ultima_analise.json
-            │
-            ▼
-      chat.py (Assistente)
-            │ orientação contextual
-            ▼
-       Tutor / Clínica
+```mermaid
+flowchart LR
+    subgraph IoT["Coleira (Wokwi)"]
+        ESP[ESP32<br/>DHT22 + MPU6050]
+    end
+    ESP -- "MQTT afetto/coleira/#" --> BROKER[(Broker HiveMQ)]
+    BROKER --> BRIDGE[mqtt_bridge.py<br/>valida e identifica o pet]
+    BROKER --> NR[Node-RED<br/>dashboard da clínica]
+    BRIDGE -- grava leitura --> DB[(SQLite<br/>telemetria · análises · conversas)]
+    BRIDGE -- "POST /pets/risco" --> GUARD
+    subgraph API["guard.py (Flask)"]
+        GUARD[Afetto Guard<br/>regras decidem]
+        CHAT[Afetto Assistente<br/>intenção + contexto]
+    end
+    PETS[(data/pets.json<br/>perfil e histórico clínico)] --> GUARD
+    PETS --> CHAT
+    DB <--> GUARD
+    DB <--> CHAT
+    GUARD -- explica --> LLM[Ollama · Llama 3<br/>local]
+    CHAT -- conversa --> LLM
+    PAINEL[Painel web do tutor] -- "GET /pets · POST /chat/mensagem" --> API
+    TERM[chat.py<br/>terminal] --> CHAT
 ```
 
-Consulte o diagrama completo em [docs/arquitetura-afetto-ia.pdf](docs/arquitetura-afetto-ia.pdf).
+### API
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| GET | `/` | Painel web do tutor |
+| GET | `/health` | Status do serviço, do Ollama, da base e do banco |
+| GET | `/pets` | Pets com última leitura e último nível de risco |
+| GET | `/pets/<id>` | Perfil, indicadores, últimas 20 leituras e últimas 5 análises |
+| POST | `/pets/<id>/analisar` | Roda o Guard com a última leitura da coleira |
+| POST | `/pets/risco` | Análise a partir de uma telemetria (usada pela ponte MQTT) |
+| POST | `/chat/mensagem` | Conversa com o Assistente: `{"pet_id": "mel", "mensagem": "...", "sessao_id": "opcional"}` |
 
 ## Tecnologias
 
-- Python 3.10+
-- Flask
-- MQTT com `paho-mqtt`
-- Ollama com um modelo Llama local
-- ESP32, DHT22 e MPU6050 no Wokwi
-- Broker público HiveMQ para a demonstração
-- `unittest` para testes automatizados
+Python 3.10+ · Flask · SQLite · paho-mqtt · Ollama + Llama 3 · ESP32, DHT22 e MPU6050 no Wokwi · HiveMQ · Node-RED · HTML/JS (painel) · `unittest`
 
-## Estrutura do projeto
+## Estrutura
 
 ```text
-Afetto-Iot/
-├── chat.py                     # Assistente conversacional
-├── guard.py                    # API e motor preventivo
-├── mqtt_bridge.py              # Ponte MQTT → IA preventiva
-├── requirements.txt            # Dependências Python
-├── tests/
-│   └── test_guard.py           # Testes do motor de risco
-├── docs/
-│   └── arquitetura-afetto-ia.pdf
-└── runtime/                    # Dados locais gerados durante a execução
+IA-prev-ass/
+├── guard.py            # API Flask: Guard, Assistente, painel e health check
+├── regras.py           # Motor de regras (faixas de temperatura, score, níveis)
+├── assistente.py       # Agente conversacional (segurança, intenção, prompt, fallback)
+├── dados.py            # Carga, validação e indicadores da base de pets
+├── db.py               # Persistência SQLite
+├── llm.py              # Cliente do Ollama (modelo configurável)
+├── mqtt_bridge.py      # Ponte MQTT → banco + Guard
+├── chat.py             # Assistente no terminal
+├── simular_coleira.py  # Simulador de coleira (sem Wokwi)
+├── data/pets.json      # Base de perfis e histórico clínico
+├── web/painel.html     # Painel do tutor
+├── tests/              # 38 testes automatizados
+├── docs/               # Diagrama em PDF
+└── runtime/            # Banco SQLite e arquivos gerados em execução
 ```
 
 ## Como executar
@@ -118,82 +141,54 @@ Afetto-Iot/
 ### 1. Pré-requisitos
 
 - Python 3.10 ou superior
-- Ollama instalado e em execução
-- Um modelo local compatível, por exemplo `llama3.2:3b`
-- Simulação Wokwi configurada para publicar em `broker.hivemq.com:1883`
+- [Ollama](https://ollama.com) instalado (opcional: sem ele, o sistema roda pelo motor de regras)
 
-### 2. Instalar dependências
+### 2. Instalar
 
 ```bash
+cd IA-prev-ass
 python -m venv .venv
-```
-
-No Windows:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
+# Windows:  .\.venv\Scripts\Activate.ps1
+# Linux/macOS:  source .venv/bin/activate
 pip install -r requirements.txt
+ollama pull llama3
 ```
 
-No macOS/Linux:
+Para usar outro modelo, por exemplo `llama3.2:3b`, defina `OLLAMA_MODEL` antes de iniciar.
+
+### 3. Rodar
+
+Em terminais separados:
 
 ```bash
-source .venv/bin/activate
-pip install -r requirements.txt
+python guard.py          # API + painel em http://localhost:5000
+python mqtt_bridge.py    # recebe a coleira e aciona o Guard
 ```
 
-### 3. Preparar o Ollama
+Em seguida, dê **▶ Play** no Wokwi. Se o Wokwi não estiver disponível, simule a coleira:
 
 ```bash
-ollama pull llama3.2:3b
+python simular_coleira.py --pet Bolinha --cenario febre
+python simular_coleira.py --pet Mel --cenario inativo
 ```
 
-Se desejar usar outro modelo, defina a variável de ambiente `OLLAMA_MODEL` antes de iniciar os serviços.
+Abra **http://localhost:5000**, escolha o pet e acompanhe a coleira, a análise e o chat. O chat também pode ser usado no terminal com `python chat.py`.
 
-### 4. Iniciar o fluxo
-
-Em terminais separados, execute nesta ordem:
-
-```bash
-python guard.py
-python mqtt_bridge.py
-python chat.py
-```
-
-Em seguida, inicie a simulação no Wokwi. O bridge recebe os tópicos MQTT, atualiza a telemetria local e chama o Guard quando houver uma situação de risco.
-
-## Como testar
-
-Execute os testes automatizados do motor preventivo:
+### 4. Testar
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-O conjunto valida cenários de rotina saudável, febre, inatividade, dados inválidos e a regra de que uma resposta do LLM não pode rebaixar uma decisão crítica do motor determinístico.
+## Resultados
 
-Para uma demonstração manual, use os botões da simulação Wokwi para provocar febre ou inatividade e acompanhe os logs dos três processos. Os arquivos `runtime/telemetria_atual.json` e `runtime/ultima_analise.json` permitem conferir o dado recebido e a análise gerada.
+- Fluxo completo funcionando: coleira → MQTT → ponte → banco → Guard → painel e chat.
+- Análise de risco que combina sinais da coleira com o histórico clínico. Exemplo: a Mel está com temperatura normal, mas atividade baixa, vacinas vencidas e idade sênior somam risco crítico.
+- Assistente que responde com os dados reais do pet, mantém o histórico da conversa e não inventa nem diagnostica.
+- Decisão de risco determinística e auditável; o LLM só personaliza o texto (garantido por teste).
+- Serviço resiliente: Ollama fora do ar ou payload inválido não derrubam o sistema.
+- 38 testes automatizados aprovados.
 
-## Resultados parciais
+## Limites e próximos passos
 
-- Integração funcional entre telemetria simulada, MQTT e serviços Python.
-- Identificação preventiva de temperatura elevada e baixa atividade.
-- Geração de orientação contextual com LLM local, quando Ollama está disponível.
-- Separação entre decisão de risco determinística e texto generativo.
-- Cinco testes automatizados do componente preventivo concluídos com sucesso.
-
-## Limites e evolução
-
-Este é um protótipo acadêmico e não é um dispositivo médico. Os limiares de risco são demonstrativos e precisam de validação veterinária antes de qualquer uso real. As próximas etapas previstas são integrar a API Java e o banco de dados da plataforma, cadastrar múltiplos pets, substituir o armazenamento local por persistência centralizada e validar alertas com profissionais da CLYVO VET.
-
-## Roteiro sugerido para o vídeo
-
-1. Apresente o problema: sinais da rotina são sutis e o histórico fica fragmentado.
-2. Mostre a coleira no Wokwi enviando temperatura e movimento por MQTT.
-3. Demonstre uma condição de atenção ou crítica e o alerta produzido pelo Guard.
-4. Mostre a orientação da IA Assistente e explique que ela apoia, não diagnostica.
-5. Feche com o benefício: mais contexto para o tutor e informações organizadas para a clínica.
-
----
-
-Projeto acadêmico de **Disruptive Architectures: IoT, IoB & Generative IA**, proposto para a jornada de cuidado contínuo da **CLYVO VET**.
+Este é um protótipo acadêmico, não um dispositivo médico. Os limiares de risco são demonstrativos e precisam de validação veterinária antes de qualquer uso real. Próximos passos: sincronizar a base local com a API Java da plataforma, levar o painel para o app mobile, autenticar o tutor e validar os alertas com profissionais da CLYVO VET.

@@ -1,0 +1,41 @@
+{
+  "analise": {
+    "mensagem_tutor": "Situação crítica com Mel. Verificar estado do pet — pode indicar dor ou letargia.",
+    "nivel": "critico",
+    "recomendacoes": [
+      {
+        "acao": "Atualizar protocolo vacinal o quanto antes",
+        "urgencia": "PREVENTIVO"
+      },
+      {
+        "acao": "Agendar check-up de rotina",
+        "urgencia": "PREVENTIVO"
+      },
+      {
+        "acao": "Verificar estado do pet — pode indicar dor ou letargia",
+        "urgencia": "URGENTE"
+      },
+      {
+        "acao": "Check-up semestral recomendado para pets sênior",
+        "urgencia": "PREVENTIVO"
+      }
+    ],
+    "riscos": [
+      "Vacinas atrasadas (V10, Antirrábica) — risco de doenças infecciosas",
+      "Sem consulta há 14 meses",
+      "Inatividade severa detectada",
+      "Pet sênior (9 anos) — maior predisposição a doenças degenerativas",
+      "Condição crônica em acompanhamento: artrite"
+    ],
+    "score_risco": 100
+  },
+  "criado_em": "2026-10-27T20:35:15-03:00",
+  "fonte": "motor_de_regras",
+  "metodo": {
+    "contexto_clinico": "base_local",
+    "decisao": "regras_deterministicas",
+    "personalizacao": "fallback_local"
+  },
+  "pet": "Mel",
+  "pet_id": "mel"
+}

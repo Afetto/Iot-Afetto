@@ -5,3 +5,5 @@ venv/
 runtime/*.json
 !runtime/.gitkeep
 .env
+runtime/*.db
+runtime/*.db-journal

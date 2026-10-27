@@ -1,0 +1,66 @@
+{
+  "versao": 1,
+  "descricao": "Base local de perfis e histórico clínico usada pela IA do Afetto (dados fictícios para demonstração).",
+  "pets": [
+    {
+      "id": "bolinha",
+      "nome": "Bolinha",
+      "especie": "cão",
+      "raca": "Labrador",
+      "sexo": "macho",
+      "data_nascimento": "2023-03-10",
+      "peso_kg": 28.0,
+      "tutor": "Ana",
+      "device_id": "coleira-001",
+      "doencas_cronicas": [],
+      "medicamentos_ativos": [],
+      "vacinas": [
+        {"nome": "V10", "aplicada_em": "2026-03-15", "proxima_dose": "2027-03-15"},
+        {"nome": "Antirrábica", "aplicada_em": "2026-03-15", "proxima_dose": "2027-03-15"}
+      ],
+      "consultas": [
+        {"data": "2026-06-20", "motivo": "Check-up anual", "observacao": "Saudável, peso adequado."}
+      ]
+    },
+    {
+      "id": "felix",
+      "nome": "Felix",
+      "especie": "gato",
+      "raca": "SRD",
+      "sexo": "macho",
+      "data_nascimento": "2023-01-05",
+      "peso_kg": 4.2,
+      "tutor": "Ana",
+      "device_id": "coleira-002",
+      "doencas_cronicas": [],
+      "medicamentos_ativos": [],
+      "vacinas": [
+        {"nome": "V4 felina", "aplicada_em": "2026-01-10", "proxima_dose": "2027-01-10"},
+        {"nome": "Antirrábica", "aplicada_em": "2026-01-10", "proxima_dose": "2027-01-10"}
+      ],
+      "consultas": [
+        {"data": "2026-02-18", "motivo": "Vômitos ocasionais", "observacao": "Bola de pelo; orientada escovação."}
+      ]
+    },
+    {
+      "id": "mel",
+      "nome": "Mel",
+      "especie": "cão",
+      "raca": "Golden Retriever",
+      "sexo": "fêmea",
+      "data_nascimento": "2017-05-22",
+      "peso_kg": 32.0,
+      "tutor": "Carlos",
+      "device_id": "coleira-003",
+      "doencas_cronicas": ["artrite"],
+      "medicamentos_ativos": ["meloxicam"],
+      "vacinas": [
+        {"nome": "V10", "aplicada_em": "2025-04-02", "proxima_dose": "2026-04-02"},
+        {"nome": "Antirrábica", "aplicada_em": "2025-04-02", "proxima_dose": "2026-04-02"}
+      ],
+      "consultas": [
+        {"data": "2025-08-11", "motivo": "Dor nas articulações", "observacao": "Artrite; iniciado meloxicam."}
+      ]
+    }
+  ]
+}

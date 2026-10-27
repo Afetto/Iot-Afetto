@@ -36,10 +36,28 @@ void setLED(int r, int g, int b) {
   digitalWrite(LED_B, !b);
 }
 
-String classificarStatus(float temp, float accel) {
-  if (temp > 40.0 || accel < 0.3) return "critico";
-  if (temp > 39.0 || accel < 0.8) return "atencao";
-  return "normal";
+// Faixas de temperatura (°C): normal 37.5–39.2 | atenção ±4°C | crítico além disso
+#define TEMP_NORMAL_MIN 37.5
+#define TEMP_NORMAL_MAX 39.2
+#define TEMP_ALERTA_MIN 33.5   // 37.5 - 4
+#define TEMP_ALERTA_MAX 43.2   // 39.2 + 4
+
+String classificarStatus(float temp, String &motivo) {
+  if (temp >= TEMP_NORMAL_MIN && temp <= TEMP_NORMAL_MAX) {
+    motivo = "";
+    return "normal";
+  } else if (temp >= TEMP_ALERTA_MIN && temp < TEMP_NORMAL_MIN) {
+    motivo = "temperatura_baixa";
+    return "atencao";
+  } else if (temp > TEMP_NORMAL_MAX && temp <= TEMP_ALERTA_MAX) {
+    motivo = "temperatura_elevada";
+    return "atencao";
+  } else if (temp > TEMP_ALERTA_MAX) {
+    motivo = "febre_critica";
+    return "critico";
+  }
+  motivo = "hipotermia_critica";
+  return "critico";
 }
 
 void atualizarLED(String status) {
@@ -135,7 +153,8 @@ void loop() {
     }
 
     // ── Classificação e LED ────────────────────────
-    String status = classificarStatus(temperatura, accel);
+    String motivo;
+    String status = classificarStatus(temperatura, motivo);
     atualizarLED(status);
 
     // ── Publicar MQTT ──────────────────────────────
@@ -144,11 +163,13 @@ void loop() {
 
     doc["valor"]   = temperatura;
     doc["umidade"] = dht.readHumidity();
+    doc["pet"]     = "Bolinha";
     serializeJson(doc, buf);
     client.publish(TOPIC_TEMP, buf);
 
     doc.clear();
     doc["valor"] = accel;
+    doc["pet"]   = "Bolinha";
     serializeJson(doc, buf);
     client.publish(TOPIC_MOV, buf);
 
@@ -156,13 +177,15 @@ void loop() {
     doc["status"] = status;
     doc["temp"]   = temperatura;
     doc["accel"]  = accel;
+    doc["pet"]    = "Bolinha";
     serializeJson(doc, buf);
     client.publish(TOPIC_STATUS, buf);
 
-    if (status == "critico") {
+    if (status != "normal") {
       doc.clear();
       doc["alerta"] = true;
-      doc["motivo"] = temperatura > 40.0 ? "febre_alta" : "inatividade";
+      doc["nivel"]  = status;
+      doc["motivo"] = motivo;
       doc["pet"]    = "Bolinha";
       serializeJson(doc, buf);
       client.publish(TOPIC_ALERTA, buf);
